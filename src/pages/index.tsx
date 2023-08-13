@@ -3,9 +3,9 @@ import { GetServerSideProps } from 'next';
 import Playground from '../app/playground'
 import { Client } from 'pg';
 import RootLayout from '../app/layout'
+import { Providers } from '../app/providers';
 
 export async function getServerSideProps() {
-  console.log("host", process.env.USER);
 const schemaName = process.env.DB_SCHEMA_NAME;
   const client = new Client({
     host: process.env.DB_HOST,
@@ -21,10 +21,11 @@ const schemaName = process.env.DB_SCHEMA_NAME;
   FROM information_schema.columns
   WHERE information_schema.columns.table_schema = '${schemaName}'`
   const res = await client.query(query);
-  console.log("rows", res);
 
   const dbInfo = res.rows.reduce((accumulator, row) => {
     accumulator[row.table_name] = accumulator[row.table_name] || [];
+    row.fakerType = "";
+    row.fakerSubType = "";
     accumulator[row.table_name].push(row);
     return accumulator;
   }, {});
@@ -35,8 +36,8 @@ const schemaName = process.env.DB_SCHEMA_NAME;
 }
 export default function Home({dbInfo}) {
   return (
-    <RootLayout>
-        <Playground dbInfo={dbInfo}></Playground>
-    </RootLayout>
+    <Providers>
+      <Playground dbInfo={dbInfo}></Playground>
+      </Providers>
   )
 }
