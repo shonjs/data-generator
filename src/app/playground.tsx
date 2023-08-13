@@ -34,14 +34,12 @@ export default function Playground({
     ))
 
     const fakerSubOptions = (fakerKey) => {
-        console.log(columns);
         if (!fakerKey) {
             return <></>;
         }
         return Object.getOwnPropertyNames(faker[fakerKey])
         .filter(property => typeof faker[fakerKey][property] === 'function')
             .map((fakerSubKey, index) => {
-                console.log("fakerSubKey", fakerSubKey);
                 return (
                     <option value={fakerSubKey.toString()} key={fakerSubKey}>{fakerSubKey.toString()}</option>
                 )
@@ -62,7 +60,7 @@ export default function Playground({
     const changeFakerSubType = (e, columnName) => {
         const newColumns = columns.map(column => {
             if (column.name === columnName) {
-                return { ...column, fakerSubType: e.target.value }
+                return { ...column, fakerSubType: e.target.value, sample: faker[column.fakerMainType][e.target.value]() }
             } else {
                 return column;
             }
@@ -83,7 +81,10 @@ export default function Playground({
                 <Select onChange={(e) => changeFakerSubType(e, column.name)}>
                     {fakerSubOptions(column.fakerMainType)}
                 </Select>
-                </Td>
+            </Td>
+            <Td>
+                {column.sample}
+            </Td>
             </Tr>
     ));
 
@@ -111,6 +112,7 @@ export default function Playground({
                                     Generator Type
                             </Th>
                             <Th>Subtype</Th>
+                            <Th>Example</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
