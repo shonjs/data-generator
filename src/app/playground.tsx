@@ -8,6 +8,7 @@ import {
     useState
 } from "react";
 import { faker } from "@faker-js/faker";
+import Save from "./save";
 
 type Column = {
     name: string
@@ -29,7 +30,9 @@ export default function Playground({
         </option>
     ));
 
-    const fakerOptions = Object.getOwnPropertyNames(faker).map((fakerKey, index) => (
+    const fakerOptions = Object.getOwnPropertyNames(faker)
+        .filter(property => typeof faker[property] === 'object')
+        .map((fakerKey, index) => (
         <option value={fakerKey.toString()} key={fakerKey}>{fakerKey.toString()}</option>
     ))
 
@@ -92,6 +95,19 @@ export default function Playground({
         setColumns(dbInfo[table]);
     }, [table, dbInfo]);
 
+    const fileSelected = (e) => {
+        if (!e.target.files) return;
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.readAsText(file);
+        reader.onload = (e) => {
+            const columnMappings = reader.result ? JSON.parse(reader.result.toString()) : {};
+            setColumns(columnMappings[table]);
+        }
+
+    }
+
     return (
         <Box>
             <Select onChange={e => setTable(e.target.value)}>
@@ -119,7 +135,10 @@ export default function Playground({
                             {columnRows}
                         </Tbody>
                     </Table>
-                </TableContainer>
+            </TableContainer>
+            
+            <Save data={JSON.stringify({[table]: columns})} name="Save" fileName="columnMapping"></Save>
+            <input type="file" onChange={fileSelected}></input>
             </Box>
     );
 }
