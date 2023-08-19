@@ -14,20 +14,17 @@ import {
 import { useEffect, useState } from "react";
 import { faker } from "@faker-js/faker";
 import Save from "./save";
+import { ColumnInfo } from "@/types";
 
-type Column = {
-  name: string;
-  type: string;
-  fakerMainType: string;
-  fakerSubType: string;
-  sample: any;
-};
-
-export default function Playground({ dbInfo }) {
+export default function Playground({
+  dbInfo,
+}: {
+  dbInfo: Record<string, [ColumnInfo]>;
+}) {
   const [table, setTable] = useState(Object.keys(dbInfo)[0]);
-  const [columns, setColumns] = useState<Array<Column>>([]);
+  const [columns, setColumns] = useState<Array<ColumnInfo>>([]);
 
-  const tablesList = Object.keys(dbInfo).map((table, index) => (
+  const tablesList = Object.keys(dbInfo)?.map((table, index) => (
     <option value={table} key={index}>
       {table}
     </option>
@@ -56,8 +53,8 @@ export default function Playground({ dbInfo }) {
       });
   };
 
-  const changeFakerType = (e, columnName) => {
-    const newColumns = columns.map((column) => {
+  const changeFakerType = (e, columnName: string) => {
+    const newColumns = columns?.map((column) => {
       if (column.name === columnName) {
         return { ...column, fakerMainType: e.target.value };
       } else {
@@ -68,7 +65,7 @@ export default function Playground({ dbInfo }) {
   };
 
   const changeFakerSubType = (e, columnName) => {
-    const newColumns = columns.map((column) => {
+    const newColumns = columns?.map((column) => {
       if (column.name === columnName) {
         return {
           ...column,
@@ -82,7 +79,7 @@ export default function Playground({ dbInfo }) {
     setColumns(newColumns);
   };
 
-  const columnRows = columns.map((column, index) => (
+  const columnRows = columns?.map((column, index) => (
     <Tr key={index}>
       <Td>{column.name}</Td>
       <Td>{column.type}</Td>
