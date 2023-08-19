@@ -3,6 +3,7 @@ import Playground from "../app/playground";
 import { Client } from "pg";
 import RootLayout from "../app/layout";
 import { Providers } from "../app/providers";
+import ErrorBoundary from "../app/error-boundary";
 
 export async function getServerSideProps() {
   const schemaName = process.env.DB_SCHEMA_NAME;
@@ -33,10 +34,18 @@ export async function getServerSideProps() {
     props: { dbInfo },
   };
 }
-export default function Home({ dbInfo }) {
+export function App({ dbInfo }) {
   return (
     <Providers>
       <Playground dbInfo={dbInfo}></Playground>
     </Providers>
+  );
+}
+
+export default function Home({ dbInfo }) {
+  return (
+    <ErrorBoundary>
+      <App dbInfo={dbInfo}></App>
+    </ErrorBoundary>
   );
 }
