@@ -24,7 +24,7 @@ export async function getServerSideProps() {
   WHERE information_schema.columns.table_schema = '${schemaName}'`;
   const res: QueryResult = await client.query(query);
 
-  const dbInfo: Record<string, [ColumnInfo]> = res.rows.reduce(
+  const dbInfo: Record<string, Array<ColumnInfo>> = res.rows.reduce(
     (accumulator, row) => {
       accumulator[row.table_name] = accumulator[row.table_name] || [];
       row.fakerType = "";

@@ -10,16 +10,17 @@ import {
   Thead,
   Tr,
   Box,
+  Button,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { faker } from "@faker-js/faker";
-import Save from "./save";
 import { ColumnInfo } from "@/types";
+import { generate, saveToFile } from "../lib/lib";
 
 export default function Playground({
   dbInfo,
 }: {
-  dbInfo: Record<string, [ColumnInfo]>;
+  dbInfo: Record<string, Array<ColumnInfo>>;
 }) {
   const [table, setTable] = useState(Object.keys(dbInfo)[0]);
   const [columns, setColumns] = useState<Array<ColumnInfo>>([]);
@@ -115,6 +116,13 @@ export default function Playground({
     };
   };
 
+  const saveScript = (e, data) => {
+    const script = generate(data);
+    if (script) {
+      console.log("script", script);
+    }
+  };
+
   return (
     <Box>
       <Select onChange={(e) => setTable(e.target.value)}>{tablesList}</Select>
@@ -134,11 +142,20 @@ export default function Playground({
         </Table>
       </TableContainer>
 
-      <Save
-        data={JSON.stringify({ [table]: columns })}
-        name="Save"
-        fileName="columnMapping"
-      ></Save>
+      <Button onClick={(e) => saveScript(e, { [table]: columns })}>
+        Generate Script
+      </Button>
+      <Button
+        onClick={() =>
+          saveToFile(
+            JSON.stringify({ [table]: columns }),
+            "columnMapping",
+            "application/json",
+          )
+        }
+      >
+        Save
+      </Button>
       <input type="file" onChange={fileSelected}></input>
     </Box>
   );
