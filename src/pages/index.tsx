@@ -27,8 +27,6 @@ export async function getServerSideProps() {
   const dbInfo: Record<string, Array<ColumnInfo>> = res.rows.reduce(
     (accumulator, row) => {
       accumulator[row.table_name] = accumulator[row.table_name] || [];
-      row.fakerType = "";
-      row.fakerSubType = "";
       accumulator[row.table_name].push(row);
       return accumulator;
     },

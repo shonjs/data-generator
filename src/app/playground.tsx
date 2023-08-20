@@ -15,7 +15,8 @@ import {
 import { useEffect, useState } from "react";
 import { faker } from "@faker-js/faker";
 import { ColumnInfo } from "@/types";
-import { generate, saveToFile } from "../lib/lib";
+import { generate, saveToFile } from "../ts/lib";
+import { defaultMapping } from "@/ts/postgres-types-mapping";
 
 export default function Playground({
   dbInfo,
@@ -25,39 +26,20 @@ export default function Playground({
   const [table, setTable] = useState(Object.keys(dbInfo)[0]);
   const [columns, setColumns] = useState<Array<ColumnInfo>>([]);
 
-  const tablesList = Object.keys(dbInfo)?.map((table, index) => (
-    <option value={table} key={index}>
-      {table}
-    </option>
-  ));
-
-  const fakerOptions = Object.getOwnPropertyNames(faker)
-    .filter((property) => typeof faker[property] === "object")
-    .map((fakerKey, index) => (
-      <option value={fakerKey.toString()} key={fakerKey}>
-        {fakerKey.toString()}
-      </option>
-    ));
-
-  const fakerSubOptions = (fakerKey) => {
-    if (!fakerKey) {
-      return <></>;
-    }
-    return Object.getOwnPropertyNames(faker[fakerKey])
-      .filter((property) => typeof faker[fakerKey][property] === "function")
-      .map((fakerSubKey, index) => {
-        return (
-          <option value={fakerSubKey.toString()} key={fakerSubKey}>
-            {fakerSubKey.toString()}
-          </option>
-        );
-      });
+  const setDefaultMappings = (columns: Array<ColumnInfo>) => {
+    return columns.map((column) => {
+      if (!column.fakeMainType && !column.fakeSubType) {
+        [column.fakeMainType, column.fakeSubType, column.sample] =
+          defaultMapping(column.type);
+      }
+      return column;
+    });
   };
 
-  const changeFakerType = (e, columnName: string) => {
+  const changeFakeType = (e, columnName: string) => {
     const newColumns = columns?.map((column) => {
       if (column.name === columnName) {
-        return { ...column, fakerMainType: e.target.value };
+        return { ...column, fakeMainType: e.target.value };
       } else {
         return column;
       }
@@ -65,13 +47,13 @@ export default function Playground({
     setColumns(newColumns);
   };
 
-  const changeFakerSubType = (e, columnName) => {
+  const changeFakeSubType = (e, columnName) => {
     const newColumns = columns?.map((column) => {
       if (column.name === columnName) {
         return {
           ...column,
-          fakerSubType: e.target.value,
-          sample: faker[column.fakerMainType][e.target.value](),
+          fakeSubType: e.target.value,
+          sample: faker[column.fakeMainType][e.target.value](),
         };
       } else {
         return column;
@@ -79,24 +61,6 @@ export default function Playground({
     });
     setColumns(newColumns);
   };
-
-  const columnRows = columns?.map((column, index) => (
-    <Tr key={index}>
-      <Td>{column.name}</Td>
-      <Td>{column.type}</Td>
-      <Td>
-        <Select onChange={(e) => changeFakerType(e, column.name)}>
-          {fakerOptions}
-        </Select>
-      </Td>
-      <Td>
-        <Select onChange={(e) => changeFakerSubType(e, column.name)}>
-          {fakerSubOptions(column.fakerMainType)}
-        </Select>
-      </Td>
-      <Td>{column.sample}</Td>
-    </Tr>
-  ));
 
   useEffect(() => {
     setColumns(dbInfo[table]);
@@ -123,9 +87,64 @@ export default function Playground({
     }
   };
 
+  const tablesList = Object.keys(dbInfo)?.map((table, index) => (
+    <option value={table} key={index}>
+      {table}
+    </option>
+  ));
+
+  const mainOptions = Object.getOwnPropertyNames(faker)
+    .filter((property) => typeof faker[property] === "object")
+    .map((fakerKey, index) => (
+      <option value={fakerKey.toString()} key={fakerKey}>
+        {fakerKey.toString()}
+      </option>
+    ));
+
+  const subOptions = (fakerKey) => {
+    if (!fakerKey) {
+      return <></>;
+    }
+    return Object.getOwnPropertyNames(faker[fakerKey])
+      .filter((property) => typeof faker[fakerKey][property] === "function")
+      .map((fakerSubKey, index) => {
+        return (
+          <option value={fakerSubKey.toString()} key={fakerSubKey}>
+            {fakerSubKey.toString()}
+          </option>
+        );
+      });
+  };
+  const columnRows = columns?.map((column, index) => (
+    <Tr key={index}>
+      <Td>{column.name}</Td>
+      <Td>{column.type}</Td>
+      <Td>
+        <Select
+          value={column.fakeMainType}
+          onChange={(e) => changeFakeType(e, column.name)}
+        >
+          {mainOptions}
+        </Select>
+      </Td>
+      <Td>
+        <Select
+          value={column.fakeSubType}
+          onChange={(e) => changeFakeSubType(e, column.name)}
+        >
+          {subOptions(column.fakeMainType)}
+        </Select>
+      </Td>
+      <Td>{column.sample}</Td>
+    </Tr>
+  ));
+
   return (
     <Box>
       <Select onChange={(e) => setTable(e.target.value)}>{tablesList}</Select>
+      <Button onClick={() => setColumns(setDefaultMappings(columns))}>
+        Set Defaults
+      </Button>
 
       <TableContainer>
         <Table variant="simple">

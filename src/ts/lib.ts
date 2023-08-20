@@ -56,12 +56,14 @@ const getColumnNamesScript = (table, columns) => {
   return columnsToInsert;
 };
 
-const getColumnsDataScript = (columns) => {
+const getColumnsDataScript = (columns: Array<ColumnInfo>) => {
   let dataForInsert = "\n(";
   columns.forEach((column) => {
     let fakeData = "";
     if (column.fakerMainType && column.fakerSubType) {
       fakeData = faker[column.fakerMainType][column.fakerSubType]().toString();
+    } else {
+      fakeData = column.sample;
     }
     dataForInsert += fakeData;
     dataForInsert += ", ";
