@@ -1,5 +1,8 @@
 import { ColumnInfo } from "@/types";
-import { faker } from "@faker-js/faker";
+import { faker as f } from "@faker-js/faker";
+import mappingInfo from "./postgres-types-mapping.json";
+
+const fakerLib = f;
 
 export const generate = (
   dbInfo: Record<string, Array<ColumnInfo>>,
@@ -33,6 +36,34 @@ export const saveToFile = (
   tempLink.setAttribute("download", fileName);
   tempLink.click();
 };
+export const getDefaultMapping = (columnType) => {
+  let { fakeType, fakeSubType, defaultValue } = mappingInfo[columnType]
+    ? mappingInfo[columnType]
+    : mappingInfo["default"];
+  if (fakeType && fakeSubType) {
+    defaultValue = fakerLib[fakeType][fakeSubType]().toString();
+  }
+  return [fakeType, fakeSubType, defaultValue];
+};
+
+export const getMainTypes = () => {
+  return Object.getOwnPropertyNames(fakerLib).filter(
+    (property) => typeof fakerLib[property] === "object",
+  );
+};
+
+export const getSubType = (mainType) => {
+  return Object.getOwnPropertyNames(fakerLib[mainType]).filter(
+    (property) => typeof fakerLib[mainType][property] === "function",
+  );
+};
+
+export const getData = (mainType, subType) => {
+  if (mainType && subType) {
+    return fakerLib[mainType][subType]();
+  }
+  return "";
+};
 
 const getInsertScriptForTable = (table, columns, noOfRecords) => {
   let columnsToInsert = getColumnNamesScript(table, columns);
@@ -60,11 +91,15 @@ const getColumnsDataScript = (columns: Array<ColumnInfo>) => {
   let dataForInsert = "\n(";
   columns.forEach((column) => {
     let fakeData = "";
-    if (column.fakerMainType && column.fakerSubType) {
-      fakeData = faker[column.fakerMainType][column.fakerSubType]().toString();
+    if (column.fakeMainType && column.fakeSubType) {
+      fakeData = fakerLib[column.fakeMainType][column.fakeSubType]().toString();
     } else {
+      console.log("sample");
+      console.log(column);
       fakeData = column.sample;
     }
+    const isQuotesRequired = mappingInfo[column.type]?.isQuotesRequired;
+    fakeData = isQuotesRequired ? "'" + fakeData + "'" : fakeData;
     dataForInsert += fakeData;
     dataForInsert += ", ";
   });

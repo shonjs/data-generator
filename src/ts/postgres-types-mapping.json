@@ -1,0 +1,72 @@
+{
+  "smallint": {
+    "fakeType": "number",
+    "fakeSubType": "int"
+  },
+  "integer": {
+    "fakeType": "number",
+    "fakeSubType": "int"
+  },
+  "bigint": {
+    "fakeType": "number",
+    "fakeSubType": "bigInt"
+  },
+  "real": {
+    "fakeType": "number",
+    "fakeSubType": "float"
+  },
+  "double precision": {
+    "fakeType": "number",
+    "fakeSubType": "float"
+  },
+  "boolean": {
+    "fakeType": "datatype",
+    "fakeSubType": "boolean"
+  },
+  "time": {
+    "fakeType": "date",
+    "fakeSubType": "past",
+    "isQuotesRequired": true
+  },
+  "time with time zone": {
+    "fakeType": "date",
+    "fakeSubType": "past",
+    "isQuotesRequired": true
+  },
+  "timestamp": {
+    "fakeType": "date",
+    "fakeSubType": "past",
+    "isQuotesRequired": true
+  },
+  "timestamp with time zone": {
+    "fakeType": "date",
+    "fakeSubType": "past",
+    "isQuotesRequired": true
+  },
+  "json": {
+    "defaultValue": "{}"
+  },
+  "jsonb": {
+    "defaultValue": "{}"
+  },
+  "character": {
+    "fakeType": "string",
+    "fakeSubType": "fromCharacters",
+    "isQuotesRequired": true
+  },
+  "character varying": {
+    "fakeType": "string",
+    "fakeSubType": "alpha",
+    "isQuotesRequired": true
+  },
+  "text": {
+    "fakeType": "lorem",
+    "fakeSubType": "paragraphs",
+    "isQuotesRequired": true
+  },
+  "default": {
+    "fakeType": "string",
+    "fakeSubType": "alpha",
+    "isQuotesRequired": true
+  }
+}

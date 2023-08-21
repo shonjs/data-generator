@@ -13,10 +13,15 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { faker } from "@faker-js/faker";
 import { ColumnInfo } from "@/types";
-import { generate, saveToFile } from "../ts/lib";
-import { defaultMapping } from "@/ts/postgres-types-mapping";
+import {
+  generate,
+  saveToFile,
+  getDefaultMapping,
+  getMainTypes,
+  getSubType,
+  getData,
+} from "../ts/lib";
 
 export default function Playground({
   dbInfo,
@@ -30,7 +35,7 @@ export default function Playground({
     return columns.map((column) => {
       if (!column.fakeMainType && !column.fakeSubType) {
         [column.fakeMainType, column.fakeSubType, column.sample] =
-          defaultMapping(column.type);
+          getDefaultMapping(column.type);
       }
       return column;
     });
@@ -53,7 +58,7 @@ export default function Playground({
         return {
           ...column,
           fakeSubType: e.target.value,
-          sample: faker[column.fakeMainType][e.target.value](),
+          sample: getData(column.fakeMainType, e.target.value),
         };
       } else {
         return column;
@@ -93,27 +98,23 @@ export default function Playground({
     </option>
   ));
 
-  const mainOptions = Object.getOwnPropertyNames(faker)
-    .filter((property) => typeof faker[property] === "object")
-    .map((fakerKey, index) => (
-      <option value={fakerKey.toString()} key={fakerKey}>
-        {fakerKey.toString()}
-      </option>
-    ));
+  const mainOptions = getMainTypes().map((fakerKey, index) => (
+    <option value={fakerKey.toString()} key={fakerKey}>
+      {fakerKey.toString()}
+    </option>
+  ));
 
-  const subOptions = (fakerKey) => {
-    if (!fakerKey) {
+  const subOptions = (mainType: string) => {
+    if (!mainType) {
       return <></>;
     }
-    return Object.getOwnPropertyNames(faker[fakerKey])
-      .filter((property) => typeof faker[fakerKey][property] === "function")
-      .map((fakerSubKey, index) => {
-        return (
-          <option value={fakerSubKey.toString()} key={fakerSubKey}>
-            {fakerSubKey.toString()}
-          </option>
-        );
-      });
+    return getSubType(mainType).map((subType, index) => {
+      return (
+        <option value={subType.toString()} key={subType}>
+          {subType.toString()}
+        </option>
+      );
+    });
   };
   const columnRows = columns?.map((column, index) => (
     <Tr key={index}>
